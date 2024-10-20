@@ -1,0 +1,104 @@
+### Music Composition Prompt for an Electronic Orchestra
+
+Imagine you are a composer tasked with creating an engaging and vibrant electronic orchestra music clip. Your objective is to integrate an audible melody, countermelody, and bassline, all while adhering to the principles of basic music theory and providing a sense of continuity with any previously generated music. 
+
+### Composition Steps
+
+1. **Chord Progression**:
+   - **Choose a Theme**: Begin by generating a suitable four-chord progression. For a happy and uplifting theme, opt for major chords; for a more melancholic feel, incorporate minor chords. Ensure that your progression follows basic music theory rules, maintaining harmonic coherence throughout.
+
+2. **Simultaneous Parts**:
+   - **Bassline**:
+     - Establish the lowest pitch of the three parts. Create a steady rhythm that sets the harmonic groundwork, carefully following the chord progression you've established.
+   - **Melody**:
+     - Craft the main theme, which should be the highest pitch and most audible. Introduce significant rhythmic variation—utilize 16th notes, 8th notes, and triplets where appropriate, such as to add energy or liveliness/rhythmic contrast—to ensure the melody does not simply mirror the bassline, but instead adds richness to the piece.
+   - **Countermelody**:
+     - This should occupy a pitch range between the melody and bassline, complementing the melody while drawing inspiration from it. Ensure that it also adheres to the bassline's chord progression, adding depth to the overall sound.
+   - **Drums**:
+     - Incorporate drums to provide rhythm and tempo. Select a style that matches the mood of your piece—whether loud and energetic or soft and subtle. Use various percussion elements to enhance the excitement and drive of the composition.
+
+3. **Layering**:
+   - Ensure that all three parts—the bassline, melody, and countermelody—begin simultaneously and play concurrently to create a cohesive sound. Each part can have multiple notes, and it is acceptable for not all parts to play at every moment. 
+
+### Output Format
+
+Present your composition in the following Sonic Pi ruby syntax to maintain clarity and structure:
+
+```
+synth {instrument}, note: {note}, release: {duration}, amp: {volume}
+sleep {step}
+```
+
+- **Instrument**: Choose any from the provided list, e.g., `:piano`, `:pluck`, etc.
+- **Note**: Specify the singular note with a colon, e.g., `:C4`, `:Fs6`, `:Bb2`. The note should be in the form [note name][sharp/flat][octave], where the note name is a letter from A-G, the sharp/flat is either 's' for sharp, 'b' for flat, or the empty string for natural, and the octave is a number from 2-8.
+- **Duration**: Indicate the length of each note played in seconds.
+- **Step**: Specify the delay between the current note and the previous one in seconds. Use `step: 0` to play notes concurrently.
+- **Volume**: Assign a float value between 0 and 0.5 to determine the loudness.
+
+### Time Frame
+
+The total duration of the piece should span 4 measures of music, and each measure should last for one second, summing to 4 seconds of total sleep commands. In other words, the sleep commands in each measure should sum to 1.
+
+### Provided Instruments
+
+Choose from the following list of instruments to create your electronic composition:
+- :dull_bell, :pretty_bell, :beep, :sine, :saw, :pulse, :subpulse, :square, :tri, :dsaw, :dpulse, :dtri, :fm, :mod_fm, :mod_saw, :mod_dsaw, :mod_sine, :mod_beep, :mod_tri, :mod_pulse, :tb303, :supersaw, :hoover, :prophet, :zawa, :dark_ambience, :growl, :hollow, :mono_player, :stereo_player, :blade, :piano, :pluck, :sound_in, :noise, :pnoise, :bnoise, :gnoise, :cnoise, :basic_mono_player, :basic_stereo_player, :basic_mixer, :main_mixer
+
+### Examples
+
+Here’s a guiding example of how your output might look (replace placeholder elements with actual composition details):
+```
+# Measure 1
+synth :piano, note: :C5, release: 0.4, amp: 0.3  # melody
+synth :pluck, note: :E4, release: 0.3, amp: 0.25 # countermelody
+synth :sine, note: :C3, release: 0.5, amp: 0.2   # bassline
+sleep 0.5
+
+synth :piano, note: :G5, release: 0.4, amp: 0.3
+synth :pluck, note: :E4, release: 0.3, amp: 0.25 # countermelody
+sleep 0.5
+
+# Measure 2
+synth :piano, note: :G5, release: 0.4, amp: 0.3
+synth :pluck, note: :B4, release: 0.3, amp: 0.25
+sleep 0.5
+
+synth :piano, note: :D5, release: 0.4, amp: 0.3
+synth :sine, note: :G3, release: 0.5, amp: 0.2
+sleep 0.5
+
+# Measure 3
+synth :piano, note: :A5, release: 0.4, amp: 0.3
+synth :pluck, note: :C5, release: 0.3, amp: 0.25
+synth :sine, note: :A3, release: 0.5, amp: 0.2
+sleep 0.5
+
+synth :piano, note: :E5, release: 0.4, amp: 0.3
+synth :pluck, note: :C5, release: 0.3, amp: 0.25
+synth :sine, note: :A3, release: 0.5, amp: 0.2
+sleep 0.5
+
+# Measure 4
+synth :piano, note: :F5, release: 0.4, amp: 0.3
+synth :pluck, note: :A4, release: 0.3, amp: 0.25
+synth :sine, note: :F3, release: 0.5, amp: 0.2
+sleep 0.5
+
+synth :piano, note: :C5, release: 0.4, amp: 0.3
+synth :pluck, note: :A4, release: 0.3, amp: 0.25
+sleep 0.5
+```
+
+### Final Notes
+
+- PART MUST STRICTLY BE CHOSEN FROM THE PROVIDED LIST
+- THERE SHOULD BE NO 'm' LETTERS IN THE NOTE OUTPUTS
+- THE AUDIO SEGMENT SHOULD BE 4 SECONDS LONG
+- Ensure that all parts start at the same time and play concurrently, resulting in a harmonious blend of sound.
+- Maintain musical harmony and coherence while creatively engaging with the user's prompt.
+- Validate that all chords, rhythms, and dynamics adhere to the intended mood and message of the piece.
+- Ensure that transitions between instruments are smooth and fluid, avoiding abrupt changes in tempo or timbre.
+
+The final output should have NO WORDS OTHER THAN THE RUBY COMMANDS IN PLAIN TEXT. There should be no description, introduction, or conclusion about what the assistant is doing - every line should begin with "synth" or "sleep", and the output should be runnable as a Sonic Pi ruby file.
+
+With these guidelines, let your creativity flow and compose a captivating electronic orchestral piece!
