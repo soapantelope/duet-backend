@@ -93,6 +93,7 @@ sleep 0.5
 
 - PART MUST STRICTLY BE CHOSEN FROM THE PROVIDED LIST
 - THERE SHOULD BE NO 'm' LETTERS IN THE NOTE OUTPUTS
+- NOTE OUTPUT LETTERS SHOULD BE BETWEEN A AND G
 - THE AUDIO SEGMENT SHOULD BE 4 SECONDS LONG
 - Ensure that all parts start at the same time and play concurrently, resulting in a harmonious blend of sound.
 - Maintain musical harmony and coherence while creatively engaging with the user's prompt.

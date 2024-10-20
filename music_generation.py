@@ -1,6 +1,6 @@
 import random
 from pythonosc import udp_client
-import openai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import re
@@ -11,8 +11,9 @@ import singlestoredb as s2
 
 load_dotenv()
 
-# Initialize OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize Gemini
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel('gemini-pro')
 
 # Initialize database connection
 SINGLESTORE_HOST = os.getenv('SINGLESTORE_HOST')
@@ -50,7 +51,7 @@ class MusicGenerator:
         return "\n".join(formatted_lines)
 
     async def generate_music(self, average_focus):
-        """Asynchronous function to generate music using OpenAI"""
+        """Asynchronous function to generate music using Gemini"""
         async with self.lock:  # Ensure only one generation happens at a time
             try:
                 print("Starting music generation for focus level:", average_focus)
@@ -66,20 +67,16 @@ The previous music segment (at focus level {self.last_focus}/100) was:
 Please create a natural musical continuation that transitions smoothly to the new focus level, maintaining thematic elements where appropriate while adjusting to the new intensity.
 """
                 
+                # Create the complete prompt
+                complete_prompt = f"{prompt}\n\nGenerate music that, on a scale of 1 (very very slow and sad) to 100 (extremely fast, happy, and exciting, with lots of notes), has a value of {average_focus}/100. For higher values of focus, use triplets, 16th notes, sextuplets, and 32nd notes, in increasing order. For lower values of focus, use half notes, whole notes, and dotted half notes, in decreasing order. Use a variety of instruments and dynamics to create a piece that is engaging and exciting.{continuation_prompt}"
+
+                # Generate response using Gemini
                 response = await asyncio.to_thread(
-                    openai.chat.completions.create,
-                    messages=[
-                        {"role": "system", "content": prompt},
-                        {
-                            "role": "user",
-                            "content": f"Generate music that, on a scale of 1 (very very slow and sad) to 100 (extremely fast, happy, and exciting, with lots of notes), has a value of {average_focus}/100. For higher values of focus, use triplets, 16th notes, sextuplets, and 32nd notes, in increasing order. For lower values of focus, use half notes, whole notes, and dotted half notes, in decreasing order. Use a variety of instruments and dynamics to create a piece that is engaging and exciting.{continuation_prompt}",
-                        }
-                    ],
-                    model="gpt-4o",
+                    lambda: model.generate_content(complete_prompt).text
                 )
 
                 result = []
-                lines = response.choices[0].message.content.split('\n')
+                lines = response.split('\n')
 
                 synth_pattern = re.compile(r"synth :(\w+), note: :(\w+), release: ([\d.]+), amp: ([\d.]+)")
                 sleep_pattern = re.compile(r"sleep ([\d.]+)")
@@ -116,16 +113,13 @@ Please create a natural musical continuation that transitions smoothly to the ne
                 client.send_message("/synth", flattened_data)
                 if result:  # Only send ambient if we have a result
                     client.send_message("/ambient", result[0][2])
-
-                # Wait for the sequence to complete playing
-                # await asyncio.sleep(total_duration)
-                # print("Finished playing sequence")
                 
             except Exception as e:
                 print(f"Error generating music: {e}")
             finally:
                 self.is_generating = False
 
+# EEGCollector class and the rest of the code remains the same
 class EEGCollector:
     def __init__(self):
         self.previous_10_focus = [50]
@@ -175,7 +169,6 @@ class EEGCollector:
                     print("Error retrieving data from database:", e)
 
             await asyncio.sleep(0.2)  # Collection interval
-
 
     async def get_average(self):
         """Get the current average focus value"""
