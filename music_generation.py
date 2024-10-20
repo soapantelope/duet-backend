@@ -4,13 +4,24 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
+import math
 import asyncio
 import statistics
+import singlestoredb as s2
 
 load_dotenv()
 
 # Initialize OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize database connection
+SINGLESTORE_HOST = os.getenv('SINGLESTORE_HOST')
+SINGLESTORE_USER = os.getenv('SINGLESTORE_USER')
+SINGLESTORE_PORT = os.getenv('SINGLESTORE_PORT')
+SINGLESTORE_DATABASE = os.getenv('SINGLESTORE_DATABASE')
+SINGLESTORE_PASSWORD = os.getenv('SINGLESTORE_PASSWORD')
+
+conn = s2.connect(f'{SINGLESTORE_USER}:{SINGLESTORE_PASSWORD}@{SINGLESTORE_HOST}:{SINGLESTORE_PORT}/{SINGLESTORE_DATABASE}')
 
 # Read the prompt file
 with open('music_generation_prompt.txt', 'r') as file:
@@ -125,13 +136,46 @@ class EEGCollector:
         """Collect and update EEG data continuously"""
         while True:
             async with self.lock:
-                current_focus = random.randint(0, 100)
-                self.previous_10_focus.append(current_focus)
-                if len(self.previous_10_focus) > 10:
-                    self.previous_10_focus.pop(0)
-                self.current_average = statistics.mean(self.previous_10_focus)
-                print("current average recent focus:", self.current_average)
+                try:
+                    # Query the latest alpha and beta values from the database
+                    sql = "SELECT avg_alpha, avg_beta FROM brain_wave_data ORDER BY timestamp DESC LIMIT 1"
+                    
+                    with conn.cursor() as cursor:
+                        cursor.execute(sql)
+                        result = cursor.fetchone()
+                        
+                        if result:
+                            avg_alpha, avg_beta = result
+                            print(f"Retrieved - Average Alpha: {avg_alpha}, Average Beta: {avg_beta}")
+
+                            # Clip alpha and beta values
+                            clipped_alpha = min(max(avg_alpha, 0), 2)  # Clip alpha to [0, 2]
+                            clipped_beta = min(max(avg_beta, 0), 1)    # Clip beta to [0, 1]
+
+                            # Combine alpha and beta into a focus value (scaled between [0, 3])
+                            combined_focus = clipped_alpha + clipped_beta
+
+                            # Linearly map combined_focus from [0, 3] to [1, 100]
+                            def linear_map(x, in_min, in_max, out_min, out_max):
+                                return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min)
+
+                            mapped_focus = linear_map(combined_focus, 0, 3, 1, 100)
+                            print("Mapped current focus:", mapped_focus)
+
+                            # Update focus history
+                            self.previous_10_focus.append(mapped_focus)
+                            if len(self.previous_10_focus) > 10:
+                                self.previous_10_focus.pop(0)
+
+                            # Calculate and store the average focus
+                            self.current_average = statistics.mean(self.previous_10_focus)
+                            print("Current average recent focus:", self.current_average)
+
+                except Exception as e:
+                    print("Error retrieving data from database:", e)
+
             await asyncio.sleep(0.2)  # Collection interval
+
 
     async def get_average(self):
         """Get the current average focus value"""

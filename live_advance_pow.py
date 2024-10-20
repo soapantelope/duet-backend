@@ -1,6 +1,21 @@
 import cortex
 from cortex import Cortex
 
+import singlestoredb as s2
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SINGLESTORE_HOST = os.getenv('SINGLESTORE_HOST')
+SINGLESTORE_USER = os.getenv('SINGLESTORE_USER')
+SINGLESTORE_PORT = os.getenv('SINGLESTORE_PORT')
+SINGLESTORE_DATABASE = os.getenv('SINGLESTORE_DATABASE')
+SINGLESTORE_PASSWORD = os.getenv('SINGLESTORE_PASSWORD')
+
+conn = s2.connect(f'{SINGLESTORE_USER}:{SINGLESTORE_PASSWORD}@{SINGLESTORE_HOST}:{SINGLESTORE_PORT}/{SINGLESTORE_DATABASE}')
+
+
 class LivePowerBands():
     """
     A class to show band power data (theta, alpha, beta, etc.) in live mode.
@@ -70,21 +85,38 @@ class LivePowerBands():
         Returns
         -------
         data: dictionary
-             the format such as
-             {'pow': [0.5, 0.6, 0.7, 0.4, 0.3, 0.2, 0.1, 0.3], 'time': 1590736942.8479}
-             where the pow array represents [theta, alpha, lowBeta, highBeta, gamma] values
-             for each channel
+            the format such as
+            {'pow': [0.5, 0.6, 0.7, 0.4, 0.3, 0.2, 0.1, 0.3], 'time': 1590736942.8479}
+            where the pow array represents [theta, alpha, lowBeta, highBeta, gamma] values
+            for each channel
         """
         data = kwargs.get('data')
-        # print('Band Power data: {}'.format(data))
-
+        
+        # Calculate the average alpha and beta values
         alpha = 0
         beta = 0
         for node in range(14):
             alpha += data['pow'][node * 5 + 1]
             beta += (data['pow'][node * 5 + 2] + data['pow'][node * 5 + 3]) / 2
         
-        print(alpha / 14, beta / 14)
+        avg_alpha = alpha / 14
+        avg_beta = beta / 14
+        
+        # Prepare the data for insertion
+        sql = "INSERT INTO brain_wave_data (avg_alpha, avg_beta) VALUES (%s, %s)"
+        values = (avg_alpha, avg_beta)
+
+        try:
+            # Use the established connection to execute the SQL command
+            with conn.cursor() as cursor:
+                cursor.execute(sql, values)
+                conn.commit()  # Commit the transaction
+        except Exception as e:
+            print("Error uploading data to SingleStore: {}".format(e))
+
+        # Print the values (optional)
+        print("Average Alpha: {}, Average Beta: {}".format(avg_alpha, avg_beta))
+
 
     def on_inform_error(self, *args, **kwargs):
         error_data = kwargs.get('error_data')
@@ -114,8 +146,8 @@ class LivePowerBands():
 
 def main():
     # Please fill your application clientId and clientSecret before running script
-    your_app_client_id = 'JFnPljMcfueBxLeSWjJxfBCH43JBMNqSI2eNqCzM'
-    your_app_client_secret = 'OIJ7kTaA6XughEgNJI9eENenKhcKlgiDTuYnIKCkxWjMQNEEYdXYHGOKNoH5wd59l7q90MxgisGw0smAhKtNqGE8PuemH55vQztJf6QCP0sytnKhPBSztOOk8rio88yQ'
+    your_app_client_id = os.getenv('EMOTIV_CLIENT_ID')
+    your_app_client_secret = os.getenv('EMOTIV_CLIENT_SECRET')
 
     # Init live power bands
     l = LivePowerBands(your_app_client_id, your_app_client_secret)
