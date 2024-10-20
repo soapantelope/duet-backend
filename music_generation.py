@@ -60,12 +60,12 @@ class MusicGenerator:
                 continuation_prompt = ""
                 if self.last_generation and self.last_focus is not None:
                     continuation_prompt = f"""
-The previous music segment (at focus level {self.last_focus}/100) was:
+                        The previous music segment (at focus level {self.last_focus}/100) was:
 
-{self.format_music_for_prompt(self.last_generation)}
+                        {self.format_music_for_prompt(self.last_generation)}
 
-Please create a natural musical continuation that transitions smoothly to the new focus level, maintaining thematic elements where appropriate while adjusting to the new intensity.
-"""
+                        Please create a natural musical continuation that transitions smoothly to the new focus level, maintaining thematic elements where appropriate while adjusting to the new intensity.
+                        """
                 
                 # Create the complete prompt
                 complete_prompt = f"{prompt}\n\nGenerate music that, on a scale of 1 (very very slow and sad) to 100 (extremely fast, happy, and exciting, with lots of notes), has a value of {average_focus}/100. For higher values of focus, use triplets, 16th notes, sextuplets, and 32nd notes, in increasing order. For lower values of focus, use half notes, whole notes, and dotted half notes, in decreasing order. Use a variety of instruments and dynamics to create a piece that is engaging and exciting.{continuation_prompt}"
