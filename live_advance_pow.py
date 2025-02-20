@@ -15,7 +15,6 @@ SINGLESTORE_PASSWORD = os.getenv('SINGLESTORE_PASSWORD')
 
 conn = s2.connect(f'{SINGLESTORE_USER}:{SINGLESTORE_PASSWORD}@{SINGLESTORE_HOST}:{SINGLESTORE_PORT}/{SINGLESTORE_DATABASE}')
 
-
 class LivePowerBands():
     """
     A class to show band power data (theta, alpha, beta, etc.) in live mode.

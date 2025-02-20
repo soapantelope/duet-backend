@@ -79,6 +79,7 @@ Please create a natural musical continuation that transitions smoothly to the ne
                 )
 
                 result = []
+                
                 lines = response.choices[0].message.content.split('\n')
 
                 synth_pattern = re.compile(r"synth :(\w+), note: :(\w+), release: ([\d.]+), amp: ([\d.]+)")
@@ -106,7 +107,7 @@ Please create a natural musical continuation that transitions smoothly to the ne
                 total_duration = sum(item[3] for item in result if item[0] == 'sleep')
                 print(f"Generated sequence with duration: {total_duration} seconds")
                 
-                result = [["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1],["synth", "piano", "C", 5, 1]]
+                # result = [["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1], ["synth", "piano", "C", 5, 1],["synth", "piano", "C", 5, 1]]
 
                 # Flatten the array
                 flattened_data = []
